@@ -1,0 +1,44 @@
+{
+  "Question3": {
+    "preProcessing": "select mmsi,timestamp,navigation.navcode,navigation.navdesc,LEAD(navigation.navcode,1,-100) OVER (partition by mmsi ORDER BY timestamp) as navcode_lag_value,LAG(navigation.navcode,1,-100) OVER ( partition by mmsi ORDER BY timestamp) as navcode_lead_value from maintable",
+    "lead": "select mmsi,timestamp, navcode, navdesc,row_number() over(order by mmsi) as id from  preProcessing pp where pp.navcode !=pp.navcode_lead_value order by mmsi",
+    "lag": "select mmsi,timestamp, navcode, navdesc,row_number() over(order by mmsi) as id from preProcessing pp where pp.navcode !=pp.navcode_lag_value order by mmsi ",
+    "main": "select leaddf.mmsi,leaddf.timestamp as start_time,lagdf.timestamp as end_time,leaddf.navcode,leaddf.navdesc,round((unix_timestamp(lagdf.timestamp)-unix_timestamp(leaddf.timestamp))/3600,2) as TimePeriodInHours  from lagdf join leaddf on lagdf.id = leaddf.id order by mmsi"
+  },
+  "Question4": {
+    "sparseCargoDetailsCount": "select count(*) as cargodetails_sparse from maintable where cargodetails is null ",
+    "sparseIMOCount": "select count(*) as imo_sparse from maintable where imo is null or imo = 0 ",
+    "sparseDestinationCount": "select count(*) as destination_sparse from maintable where destination is null ",
+    "main": "select * from cargo_sparse,imo_sparse,destination_sparse"
+  },
+  "Question5": {
+    "main": "select mmsi,vesselDetails.flagCountry as country,port.name as port from maintable group by mmsi,country,port order by mmsi "
+  },
+  "Question6": {
+    "main": "select navigation.navcode,navigation.navdesc,count(*) as frequency from maintable group by navigation.navcode,navigation.navdesc order by frequency desc"
+  },
+  "Question9": {
+    "main": "select * from q9 order by TimePeriodInHours desc limit 10"
+  },
+  "Question10": {
+    "preProcessing": "select avg(TimePeriodInHours) as ld from q9",
+    "main": "select q3.mmsi,q3.start_time,q3.end_time,q3.navcode,q3.navdesc,if(q3.TimePeriodInHours>q9p.ld,'increased','decreased') as state from q3,q9p "
+  },
+  "Question11": {
+    "main": "select mmsi,round(dwell_Time_In_Hours/frequency,2) as average_dwell_InHours from (select mmsi,sum(TimePeriodInHours) as dwell_Time_In_Hours,count(*) as frequency from q3 where navdesc='At Anchor' or navdesc='Moored' group by mmsi order by mmsi)"
+  },
+  "Question_7OR8": {
+    "Question_a": {
+      "main": "select navigation.navcode,navigation.navdesc,count(*) as frequency from maintable where mmsi = @@mmsi group by navigation.navcode,navigation.navdesc order by frequency limit 5"
+    },
+    "Question_b": {
+      "preProcessing": "select mmsi,timestamp,navigation.navcode,navigation.navdesc,LEAD(navigation.navcode,1,-100) OVER ( ORDER BY timestamp) as lead_navcode,LAG(navigation.navcode,1,-100) OVER ( ORDER BY timestamp) as lag_navcode from maintable where mmsi = @@mmsi ",
+      "lead": " select mmsi,timestamp, navcode, navdesc,row_number() over(order by timestamp) as id from q7b where q7b.navcode !=q7b.lead_navcode",
+      "lag": " select mmsi,timestamp, navcode, navdesc,row_number() over(order by timestamp) as id from q7b where q7b.navcode !=q7b.lag_navcode ",
+      "main": "select leaddf.mmsi,lagdf.timestamp as start_time,leaddf.timestamp as timestamp_of_last_event,leaddf.navcode,leaddf.navdesc from lagdf join leaddf on lagdf.id = leaddf.id order by mmsi"
+    },
+    "Question_c": {
+      "main": "select *, round(unix_timestamp(timestamp_of_last_event)-unix_timestamp(start_time))*1000 as lead_time from q7c"
+    }
+  }
+}

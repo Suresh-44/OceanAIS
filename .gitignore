@@ -1,0 +1,6 @@
+.idea/*.xml
+.idea\modules\*.iml
+.idea\libraries\*.iml
+.idea\codeStyles\*.iml
+.idea\.gitignore
+project/
