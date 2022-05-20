@@ -12,7 +12,7 @@ object OceanAISMain {
 
     val applicationConf: Config = ConfigFactory.load("\\config\\queries.json")
 
-    val df = spark.read.parquet("C:\\Users\\suresh\\Desktop\\Spark\\AgileEngineProject\\parquet\\")
+    val df = spark.read.parquet(args(0))
     df.createOrReplaceTempView("test")
     df.printSchema()
     df.show(false)

@@ -1,4 +1,3 @@
-
 name := "SupplyChainProject"
 
 version := "0.1"
