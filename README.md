@@ -1,8 +1,5 @@
 # OceanAIS
 
-
-# Supply Chain Project
-
 #### A brief description of the data 
      
      The dataset related to different vessels AIS (Automatic Identification System) data. The dataset consists of static and dynamic fields of a ship.
